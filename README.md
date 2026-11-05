@@ -19,7 +19,7 @@ This analytics backend addresses these challenges by processing multi-device tel
 
 ## Architecture Preview
 
-![Industrial IoT Cost-Impact Analytics Backend Architecture](architecture.png)
+![Industrial IoT Cost-Impact Analytics Backend Architecture](assets/architecture.png)
 
 The backend executes an on-demand, four-stage analytical pipeline:
 1. **Ingress & Orchestration:** Ingests simulation requests, validates schemas, localizes calendar periods to standardized UTC SQL bounds, and partitions assets across dedicated analytical pipelines.
@@ -119,7 +119,7 @@ The backend executes an on-demand, four-stage analytical pipeline:
 For a comprehensive technical walkthrough of the architecture, data engineering pipelines, mathematical formulas, and forensic metric audits, refer to:
 
 - **[Engineering Case Study (`CASE_STUDY.md`)](CASE_STUDY.md)** — In-depth architectural case study covering domain challenges, state machine design, complete symbolic mathematical equations, query patterns, and role boundaries.
-- **[System Architecture Diagram (`architecture.png`)](architecture.png)** — High-resolution landscape architecture visualization.
+- **[System Architecture Diagram (`architecture.png`)](assets/architecture.png)** — High-resolution landscape architecture visualization.
 
 ---
 
