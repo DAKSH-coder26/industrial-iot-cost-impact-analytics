@@ -131,7 +131,7 @@ The Cost-Impact Analytics Engine is built as a modular microservice designed to 
 
 The backend adheres to a layered microservice pattern, separating network protocol handling, validation, database access, equipment analytics, and response synthesis into decoupled layers.
 
-![Industrial IoT Cost-Impact Analytics Backend Architecture](architecture.png)
+![Industrial IoT Cost-Impact Analytics Backend Architecture](assets/architecture.png)
 
 ### Architectural Components
 
