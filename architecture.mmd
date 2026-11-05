@@ -1,0 +1,113 @@
+graph LR
+    %% Industrial IoT Cost-Impact Analytics Backend Architecture
+    %% Sanitized Portfolio Architecture Specification
+
+    classDef clientLayer fill:#F8FAFC,stroke:#64748B,stroke-width:2px,color:#0F172A;
+    classDef apiLayer fill:#EFF6FF,stroke:#2563EB,stroke-width:2px,color:#1E3A8A;
+    classDef dbLayer fill:#F0FDF4,stroke:#16A34A,stroke-width:2px,color:#14532D;
+    classDef configLayer fill:#FAF5FF,stroke:#9333EA,stroke-width:2px,color:#581C87;
+    classDef rawNode fill:#F1F5F9,stroke:#64748B,stroke-width:1.8px,color:#1E293B;
+    classDef eventNode fill:#E0F2FE,stroke:#0284C7,stroke-width:1.8px,color:#075985;
+    classDef physNode fill:#ECFDF5,stroke:#059669,stroke-width:1.8px,color:#064E3B;
+    classDef modelNode fill:#FFFBEB,stroke:#D97706,stroke-width:1.8px,color:#78350F;
+    classDef egressLayer fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81;
+
+    subgraph INGRESS ["1. Ingress & Dispatch Layer"]
+        REQ["Simulation Request<br/><b>Target Devices & Time Window</b>"]:::clientLayer
+        VAL["Request Validation<br/><b>Schema & Date Bounds Check</b>"]:::apiLayer
+        DEV["Device Resolution<br/><b>Metadata & Category Mapping</b>"]:::apiLayer
+        TIME["Timezone Normalization<br/><b>Local Window to UTC Query Bounds</b>"]:::apiLayer
+        DISP["Category Dispatcher<br/><b>Route to Equipment Engines</b>"]:::apiLayer
+    end
+
+    subgraph PERSISTENCE ["2. Shared Persistence & Domain Knowledge"]
+        DB[("Relational Database<br/><b>Connection Pool & Raw SQL</b>")]:::dbLayer
+        CFG["Domain Configuration<br/><b>Tariffs, Probabilities & Constants</b>"]:::configLayer
+    end
+
+    subgraph PIPELINES ["3. Equipment-Specific Analytics Pipelines"]
+
+        subgraph B1 ["Water Quality & Chemical Sensors"]
+            Q1["Time-Series Telemetry<br/><b>pH, Cond, Turbidity, Cl</b>"]:::rawNode
+            Q2["Excursion Segmentation<br/><b>Contiguous Breach State</b>"]:::eventNode
+            Q3["Contaminated Volume<br/><b>Flow Rate x Duration</b>"]:::physNode
+            Q4["Avoided Chemical Loss<br/><b>Modeled Dosing Cost*</b>"]:::modelNode
+        end
+
+        subgraph B2 ["Motor-Driven Pumps"]
+            M1["Electrical Telemetry<br/><b>Running Current & Faults</b>"]:::rawNode
+            M2["Trip Classification<br/><b>Multi-State Trip Events</b>"]:::eventNode
+            M3["Hydraulic Power Model<br/><b>Derived Flow & Conserved kWh</b>"]:::physNode
+            M4["Prevented Burnout Value<br/><b>Failure Probability Matrix*</b>"]:::modelNode
+        end
+
+        subgraph B3 ["Automated Remote Valves"]
+            V1["Actuator State Logs<br/><b>Position & Control Platform</b>"]:::rawNode
+            V2["Automated Shutoff<br/><b>OPEN to CLOSE Transition</b>"]:::eventNode
+            V3["Lookback Flow Pairing<br/><b>Upstream Volume Correlation</b>"]:::physNode
+            V4["Avoided Leakage Loss<br/><b>Assumed Run Duration*</b>"]:::modelNode
+        end
+
+        subgraph B4 ["Ultrasonic Level Sensors"]
+            L1["Level Transducer Data<br/><b>Hardware Error Sanitization</b>"]:::rawNode
+            L2["Cadence & Event Tracking<br/><b>Continuous vs Duty-Cycled</b>"]:::eventNode
+            L3["Overflow Volume Model<br/><b>Tank Geometry & Breach Rise</b>"]:::physNode
+            L4["Prevented Spillage Value<br/><b>Modeled Water Tariff*</b>"]:::modelNode
+        end
+
+        subgraph B5 ["Monotonic Flow Meters"]
+            F1["Cumulative Register<br/><b>Totalizer Continuity Check</b>"]:::rawNode
+            F2["Boundary Delta Query<br/><b>Dual Window Edge Extraction</b>"]:::eventNode
+            F3["Net Volume Standardization<br/><b>Metric Throughput (m³)</b>"]:::physNode
+            F4["Metered Utility Revenue<br/><b>Modeled Consumption Tariff*</b>"]:::modelNode
+        end
+
+    end
+
+    subgraph EGRESS ["4. Aggregation & Response Delivery"]
+        SUB["Category Subtotals<br/><b>Equipment Class Rollups</b>"]:::egressLayer
+        KPI["Resource Metrics<br/><b>kWh, Preserved Water, CO₂</b>"]:::egressLayer
+        TOT["Grand Total Synthesis<br/><b>Overall Modeled Impact</b>"]:::egressLayer
+        RES["API Response Delivery<br/><b>Structured JSON Payload</b>"]:::clientLayer
+    end
+
+    %% Ingress flow
+    REQ --> VAL --> DEV --> TIME --> DISP
+
+    %% Database & Config access
+    DEV -.-> DB
+    TIME -.-> DB
+    DB -. Parameterized SQL .-> Q1
+    DB -. Parameterized SQL .-> M1
+    DB -. Parameterized SQL .-> V1
+    DB -. Parameterized SQL .-> L1
+    DB -. Parameterized SQL .-> F1
+
+    CFG -. Domain Parameters .-> Q4
+    CFG -. Failure Probability .-> M4
+    CFG -. Labor Benchmark .-> V4
+    CFG -. Overflow Buffer .-> L4
+    CFG -. Volume Tariff .-> F4
+
+    %% Dispatcher routing
+    DISP --> Q1
+    DISP --> M1
+    DISP --> V1
+    DISP --> L1
+    DISP --> F1
+
+    %% Stage processing flow
+    Q1 --> Q2 --> Q3 --> Q4
+    M1 --> M2 --> M3 --> M4
+    V1 --> V2 --> V3 --> V4
+    L1 --> L2 --> L3 --> L4
+    F1 --> F2 --> F3 --> F4
+
+    %% Aggregation
+    Q4 --> SUB
+    M4 --> SUB
+    V4 --> SUB
+    L4 --> SUB
+    F4 --> SUB
+
+    SUB --> KPI --> TOT --> RES
